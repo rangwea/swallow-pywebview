@@ -1,0 +1,11 @@
+.idea
+.DS_Store
+tests/.swallow
+build
+dist
+.eggs
+main.app
+main.build
+main.dist
+__pycache__
+*.app

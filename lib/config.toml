@@ -1,0 +1,36 @@
+baseURL = 'http://local:1313/'
+languageCode = 'zh-cn'
+title = 'swallow'
+description = ''
+theme = 'jane'
+copyright = ""
+
+[menu]
+[[menu.main]]
+identifier = 'home'
+name = 'Home'
+url = '/'
+weight = 1
+[[menu.main]]
+identifier = 'articles'
+name = 'Articles'
+url = '/post'
+weight = 2
+[[menu.main]]
+identifier = 'categories'
+name = 'Categories'
+url = '/categories'
+weight = 3
+[[menu.main]]
+identifier = 'tags'
+name = 'Tags'
+url = '/tags'
+weight = 4
+[[menu.main]]
+identifier = 'about'
+name = 'About'
+url = '/about'
+weight = 5
+
+[author]
+  name = "swallow"

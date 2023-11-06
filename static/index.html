@@ -1,0 +1,502 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Navigation Side Bar by Mohamed-Kaizen. </title>
+    <link rel="icon" href="data:;base64,=">
+    <link href="/static/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/font-awesome.min.css">
+    <link rel="stylesheet" href="/static/easymde.min.css">
+    <script src="/static/easymde.min.js"></script>
+    <script src="/static/alpine.min.js" defer></script>
+</head>
+<body x-data="app()">
+<div class="h-screen w-screen flex text-gray-700">
+    <!-- container -->
+    <aside class="flex flex-col items-center bg-white text-gray-700 shadow h-full">
+        <!-- Side Nav Bar-->
+        <div class="h-16 flex items-center w-full pt-2">
+            <!-- Logo Section -->
+            <img class="h-9 w-10 mx-auto"
+                 src="/static/logo.png"
+                 alt="svelte logo"/>
+        </div>
+        <ul>
+            <li class="hover:bg-gray-200">
+                <a href="#" class="h-16 px-6 flex flex justify-center items-center w-full focus:text-orange-500"
+                   @click="articleNew()">
+                    <i class="fa fa-plus"></i>
+                </a>
+            </li>
+            <li class="hover:bg-gray-200">
+                <a href="#" class="h-16 px-6 flex flex justify-center items-center w-full focus:text-orange-500"
+                   @click="articleListPage(0)">
+                    <i class="fa fa-bars"></i>
+                </a>
+            </li>
+            <li class="hover:bg-gray-200">
+                <a href="#" class="h-16 px-6 flex flex justify-center items-center w-full focus:text-orange-500"
+                   @click="confPage('conf')">
+                    <i class="fa fa-gear"></i>
+                </a>
+            </li>
+            <li class="hover:bg-gray-200">
+                <a href="#" class="h-16 px-6 flex flex justify-center items-center w-full focus:text-orange-500"
+                   @click="preview()">
+                    <i class="fa fa-eye"></i>
+                </a>
+            </li>
+            <li class="hover:bg-gray-200">
+                <a href="#" class="h-16 px-6 flex flex justify-center items-center w-full focus:text-orange-500"
+                   @click="deploy()">
+                    <i class="fa fa-upload"> </i>
+                </a>
+            </li>
+        </ul>
+    </aside>
+
+    <div x-show="openedPage === 'article_list'" class="mx-auto bg-white w-full shadow"
+         @pywebviewready.window="articleListPage(0)">
+        <div class="mb-0 px-5 py-3 border-b">
+            <div class="flex flex-wrap items-center">
+                <div class="relative w-full px-4 max-w-full flex-grow flex-1">
+                    <h3 class="font-semibold text-base text-lg text-gray-700">Articles</h3>
+                </div>
+                <div class="relative w-full px-4 max-w-full flex-grow flex-1 text-right">
+                    <input class="border-2 border-gray-300 bg-white h-10 px-5 pr-16 rounded-lg text-sm focus:outline-none"
+                           type="search" name="search" placeholder="Search" x-model="searchText" @keydown.enter="search()">
+                    <button type="submit" class="absolute right-0 top-0 mt-2 mr-8" @click="search()">
+                        <i class="fa fa-search text-gray-600"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-3">
+            <table class="w-full border-collapse">
+                <tr class="border">
+                    <td class="text-lg p-5 pl-8 text-left w-5/12 text-gray-600">
+                        <a href="#" @click="articleEdit('about')">About</a>
+                    </td>
+                    <td/>
+                    <td/>
+                    <td/>
+                    <td/>
+                </tr>
+                <template x-for="article in articles">
+                    <tr class="border">
+                        <td class="text-lg p-5 pl-8 text-left w-5/12 text-gray-600">
+                            <a href="#" @click="articleEdit(article.aid)" x-text="article.title"></a>
+                        </td>
+                        <td class="text-xs text-center w-2/12 text-gray-500" x-text="article.categories">
+                        </td>
+                        <td class="text-xs text-center w-3/12 text-gray-500" x-text="article.tags">
+                        </td>
+                        <td class="text-xs text-center w-1/12 text-gray-500" x-text="article.create_time">
+                        </td>
+                        <td class="text-xs text-center w-1/12 text-gray-500">
+                            <button @click="articleDel(article.aid)"><i class="fa fa-trash"></i></button>
+                        </td>
+                    </tr>
+                </template>
+            </table>
+        </div>
+    </div>
+
+    <div x-show="openedPage === 'article'" class="mx-auto bg-white w-full shadow"
+         @mdexit.window="articleListPage(curPage)" @mdsave.window="articleSave()">
+        <textarea id="article-text-area"></textarea>
+    </div>
+
+    <div x-show="openedPage === 'conf'" class="mx-auto bg-white w-full shadow text-gray-600">
+        <div class="mt-6">
+            <ul class="flex flex-row justify-center">
+                <li>
+                    <a href="#"
+                       class="block text-lg leading-tight border px-8 py-1 m-1 rounded"
+                       :class="{'bg-gray-300 border-transparent': openedConfTab === 'site'}"
+                       @click="openSiteTab()">site</a>
+                </li>
+                <li>
+                    <a href="#"
+                       class=" block text-lg leading-tight border px-8 py-1 m-1 rounded"
+                       :class="{'bg-gray-300 border-transparent': openedConfTab === 'cos'}"
+                       @click="openCosTab()">cos</a>
+                </li>
+                <li>
+                    <a href="#"
+                       class=" block text-lg leading-tight border px-8 py-1 m-1 rounded"
+                       :class="{'bg-gray-300 border-transparent': openedConfTab === 'gitee'}"
+                       @click="openGiteeTab()">gitee</a>
+                </li>
+            </ul>
+            <div class="border-b mb-10"></div>
+            <div x-show="openedConfTab === 'site'" class="fade show space-y-8">
+                <div class="flex justify-center items-center">
+                    <div class="w-24 text-right">Title</div>
+                    <input class="border border-gray-400 bg-white px-2 h-8 rounded text-sm w-1/2 ml-3 focus:outline-none focus:border-gray-600"
+                           type="text" name="title" x-model="siteConf.title">
+                </div>
+                <div class="flex justify-center items-center">
+                    <div class="w-24 text-right">Description</div>
+                    <input class="border border-gray-400 bg-white px-2 h-8 rounded text-sm w-1/2 ml-3 focus:outline-none focus:border-gray-600"
+                           type="text" x-model="siteConf.description">
+                </div>
+                <div class="flex justify-center items-center">
+                    <div class="w-24 text-right">author</div>
+                    <input class="border border-gray-400 bg-white px-2 h-8 rounded text-sm w-1/2 ml-3 focus:outline-none focus:border-gray-600"
+                           type="text" x-model="siteConf.author.name">
+                </div>
+                <div class="flex justify-center items-center">
+                    <div class="w-24 text-right">copyright</div>
+                    <input class="border border-gray-400 bg-white px-2 h-8 rounded text-sm w-1/2 ml-3 focus:outline-none focus:border-gray-600"
+                           type="text" x-model="siteConf.copyright">
+                </div>
+                <div class="flex justify-center items-center">
+                    <div class="w-24 text-right">Theme</div>
+                    <select class="border border-gray-400 bg-white px-2 h-8 rounded text-sm w-1/2 ml-2 shadow-none"
+                            x-model="siteConf.theme">
+                        <option>jane</option>
+                        <option>stack</option>
+                    </select>
+                </div>
+                <div class="flex justify-center items-center">
+                    <button class="bg-blue-600 hover:bg-blue-700 active:bg-gray-700 focus:outline-none focus:ring px-5 py-1 rounded-lg text-white"
+                            @click="siteConfSave()">
+                        Save
+                    </button>
+                </div>
+
+                <div class="w-full border-b flex justify-center items-center"></div>
+
+                <div class="flex justify-center items-center">
+                    <div class="p-3">Avatar</div>
+                    <div class="flex flex-col w-1/6 h-32 border-4 border-dashed hover:bg-gray-100 hover:border-gray-300">
+                        <div class="relative flex flex-col items-center justify-center pt-7"
+                             @click="uploadImage('avatar.png')">
+                            <template x-if="siteImage.avatar">
+                                <img id="avatarPreview" class="absolute inset-0 w-full h-32 block"
+                                     :src="siteImage.avatar">
+                            </template>
+                            <i class="fa fa-upload mt-10"></i>
+                            <p class="pt-1 text-sm tracking-wider text-gray-400 group-hover:text-gray-600">select a
+                                image</p>
+                        </div>
+                    </div>
+                    <div class="p-3">Favicon</div>
+                    <div class="flex flex-col w-1/6 h-32 border-4 border-dashed hover:bg-gray-100 hover:border-gray-300">
+                        <div class="relative flex flex-col items-center justify-center pt-7"
+                             @click="uploadImage( 'favicon.ico')">
+                            <template x-if="siteImage.favicon">
+                                <img class="absolute inset-0 w-full h-32 block" :src="siteImage.favicon">
+                            </template>
+                            <i class="fa fa-upload mt-10"></i>
+                            <p class="pt-1 text-sm tracking-wider text-gray-400 group-hover:text-gray-600">select a
+                                image</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div x-show="openedConfTab === 'cos'" class="fade show space-y-8">
+            <div class="flex justify-center items-center">
+                <div class="w-24 text-right">AppId</div>
+                <input class="border border-gray-400 bg-white px-2 h-8 rounded text-sm w-1/2 ml-3 focus:outline-none focus:border-gray-600"
+                       type="text" name="appid" x-model="cosConf.appid">
+            </div>
+            <div class="flex justify-center items-center">
+                <div class="w-24 text-right">SecretId</div>
+                <input class="border border-gray-400 bg-white px-2 h-8 rounded text-sm w-1/2 ml-3 focus:outline-none focus:border-gray-600"
+                       type="text" x-model="cosConf.secret_id">
+            </div>
+            <div class="flex justify-center items-center">
+                <div class="w-24 text-right">SecretKey</div>
+                <input class="border border-gray-400 bg-white px-2 h-8 rounded text-sm w-1/2 ml-2 focus:outline-none focus:border-gray-600"
+                       type="text" x-model="cosConf.secret_key">
+            </div>
+            <div class="flex justify-center items-center">
+                <div class="w-24 text-right">RegionInfo</div>
+                <input class="border border-gray-400 bg-white px-2 h-8 rounded text-sm w-1/2 ml-2 focus:outline-none focus:border-gray-600"
+                       type="text" x-model="cosConf.region_info">
+            </div>
+            <div class="flex justify-center items-center">
+                <div class="w-24 text-right">BucketName</div>
+                <input class="border border-gray-400 bg-white px-2 h-8 rounded text-sm w-1/2 ml-2 focus:outline-none focus:border-gray-600"
+                       type="text" x-model="cosConf.bucket_name">
+            </div>
+            <div class="flex justify-center items-center">
+                <button class="bg-blue-600 hover:bg-blue-700 active:bg-gray-700 focus:outline-none focus:ring px-5 py-1 rounded-lg text-white"
+                        @click="cosConfSave()">
+                    Save
+                </button>
+            </div>
+        </div>
+        <div x-show="openedConfTab === 'gitee'" class="fade space-y-8">
+            <div class="flex justify-center items-center">
+                <div class="w-24 text-right">Repository</div>
+                <input class="border border-gray-400 bg-white px-2 h-8 rounded text-sm w-1/2 ml-3 focus:outline-none focus:border-gray-600"
+                       type="text" name="appid" x-model="giteeConf.repository">
+            </div>
+            <div class="flex justify-center items-center">
+                <div class="w-24 text-right">Token</div>
+                <input class="border border-gray-400 bg-white px-2 h-8 rounded text-sm w-1/2 ml-3 focus:outline-none focus:border-gray-600"
+                       type="text" x-model="giteeConf.token">
+            </div>
+            <div class="flex justify-center items-center">
+                <button class="bg-blue-600 hover:bg-blue-700 active:bg-gray-700 focus:outline-none focus:ring px-5 py-1 rounded-lg text-white"
+                        @click="giteeConfSave()">
+                    Save
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+<template x-if="openAlertBox">
+    <div class="flex justify-center">
+        <div
+                class="fixed top-0 z-50"
+                x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0"
+                x-transition:enter-end="opacity-100"
+                x-transition:leave="transition ease-in duration-300"
+                x-transition:leave-start="opacity-100"
+                x-transition:leave-end="opacity-0"
+        >
+            <div class="flex items-center text-white text-sm font-bold px-4 py-1 mt-2 rounded shadow-md"
+                 :class="alertBackgroundColor" role="alert">
+                <span x-html="alertMessage" class="flex px-1 py-0"></span>
+                <button type="button" class="flex" @click="openAlertBox = false">
+                    <i class="fa fa-close"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</template>
+<script>
+    function log(msg) {
+        window.pywebview.api.front_log(msg)
+    }
+
+    const easyMDE = new EasyMDE({
+        element: document.getElementById('article-text-area'),
+        spellChecker: false,
+        toolbar: [
+            {
+                name: "exit",
+                action: (editor) => {
+                    easyMDE.value("")
+                    window.dispatchEvent(new Event('mdexit'));
+                },
+                className: "fa fa-reply",
+                title: "Bold",
+            },
+            {
+                name: "save",
+                action: (editor) => {
+                    window.dispatchEvent(new Event('mdsave'));
+                },
+                className: "fa fa-save",
+                title: "Bold",
+            },
+            "|",
+            "bold",
+            "italic",
+            "strikethrough",
+            "|",
+            "heading",
+            "heading-1",
+            "heading-2",
+            "heading-3",
+            "|",
+            "quote",
+            "|",
+            "unordered-list",
+            "ordered-list",
+            "table",
+            "|",
+            "link",
+            "upload-image",
+            "|",
+            "side-by-side"
+        ],
+        imageUploadEndpoint: '/images/upload',
+        imagePathAbsolute: true,
+        forceSync: true,
+        autofocus: true,
+    });
+
+    easyMDE.toggleFullScreen()
+
+    function app() {
+        return {
+            openedPage: 'article_list',
+            preview() {
+                window.pywebview.api.site_preview().then(resp => {
+                    this.showAlert('success', '预览已打开，请在浏览器查看')
+                })
+            },
+            deploy() {
+                this.showAlert('wait', '正在部署中，请稍后...')
+                window.pywebview.api.site_deploy().then(resp => {
+                    this.showAlert('success', '部署成功!!!')
+                })
+            },
+            articles: [],
+            curPage: 0,
+            confPage() {
+                this.openedPage = 'conf'
+                this.openSiteTab()
+            },
+            articleListPage(page) {
+                window.pywebview.api.article_list(page, '').then(resp => {
+                    this.articles = resp
+                    this.openedPage = 'article_list'
+                })
+            },
+            searchText: '',
+            search() {
+               window.pywebview.api.article_list(this.curPage, this.searchText).then(resp => {
+                    this.articles = resp
+                })
+            },
+            articleNew() {
+                this.openedPage = 'article'
+                window.pywebview.api.article_new().then(resp => {
+                    easyMDE.value('```\n'
+                        + 'title = "This is my first blog"\n'
+                        + 'categories = [""]\n'
+                        + 'date = "2012-04-06"\n'
+                        + 'description = ""\n'
+                        + 'tags = ["one","two"]\n'
+                        + '```\n')
+                })
+            },
+            articleEdit(aid) {
+                this.openedPage = 'article'
+                window.pywebview.api.article_get(aid).then(resp => {
+                    easyMDE.value(resp)
+                })
+            },
+            articleSave() {
+                window.pywebview.api.article_save(easyMDE.value()).then(resp => {
+                    this.showAlert('success', '文章已保存')
+                })
+            },
+            articleDel(aid) {
+                window.pywebview.api.article_del(aid).then(resp => {
+                    this.showAlert('success', '文章已删除')
+                    this.articleListPage(this.curPage)
+                })
+            },
+            openedConfTab: 'site',
+            siteConf: {
+                title: '',
+                description: '',
+                theme: '',
+                copyright: '',
+                author: {
+                    name: ''
+                }
+            },
+            siteImage: {
+                'avatar': '',
+                'favicon': ''
+            },
+            openSiteTab() {
+                this.openedConfTab = 'site'
+                window.pywebview.api.site_conf_get().then(resp => {
+                    if (resp) {
+                        this.siteConf = resp
+                    }
+                })
+                window.pywebview.api.get_site_image_config().then(resp => {
+                    this.siteImage = resp
+                })
+            },
+            siteConfSave() {
+                window.pywebview.api.site_conf_save(this.siteConf).then(resp => {
+                    this.showAlert('success', '配置保存成功')
+                })
+            },
+            cosConf: {
+                appid: '',
+                secret_id: '',
+                secure_key: '',
+                region_info: '',
+                bucket_name: ''
+            },
+            openCosTab() {
+                this.openedConfTab = 'cos'
+                window.pywebview.api.conf_get('cos').then(resp => {
+                    if (resp) {
+                        this.cosConf = resp
+                    }
+                })
+            },
+            cosConfSave() {
+                window.pywebview.api.conf_save('cos', this.cosConf).then(resp => {
+                    this.showAlert('success', '配置保存成功')
+                })
+            },
+            giteeConf: {
+                repository: '',
+                token: ''
+            },
+            openGiteeTab() {
+                this.openedConfTab = 'gitee'
+                window.pywebview.api.conf_get('gitee').then(resp => {
+                    if (resp) {
+                        this.giteeConf = resp
+                    }
+                })
+            },
+            giteeConfSave() {
+                window.pywebview.api.conf_save('gitee', this.giteeConf).then(resp => {
+                    this.showAlert('success', '配置保存成功')
+                })
+            },
+            // alert
+            openAlertBox: false,
+            alertMessage: '',
+            alertBackgroundColor: '',
+            showAlert(type, msg) {
+                this.openAlertBox = true
+                this.alertMessage = msg
+                switch (type) {
+                    case 'success':
+                        this.alertBackgroundColor = 'bg-green-500'
+                        break
+                    case 'error':
+                        this.alertBackgroundColor = 'bg-red-500'
+                        break
+                    case 'wait':
+                        this.alertBackgroundColor = 'bg-orange-400'
+                        break
+                }
+                if (type !== 'wait') {
+                    this.alertCloseWill()
+                }
+            },
+            alertClose() {
+                this.openAlertBox = false
+            },
+            alertCloseWill() {
+                setTimeout(() => {
+                    this.openAlertBox = false
+                }, 2000)
+            },
+            uploadImage(name) {
+                window.pywebview.api.upload_site_image(name).then(resp => {
+                    if (name === 'avatar.png') {
+                        this.siteImage.avatar = resp + '?' + new Date().getTime()
+                    } else if (name === 'favicon.ico') {
+                        this.siteImage.favicon = resp + '?' + new Date().getTime()
+                    }
+                })
+            }
+        }
+    }
+</script>
+</body>
+</html>
